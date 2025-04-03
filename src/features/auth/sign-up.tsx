@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Card,
   Text,
@@ -22,8 +21,8 @@ import Logo from "../../common/logo";
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const location = useLocation()
-  const roleOfUser = location.state.role
+  const location = useLocation();
+  const roleOfUser = location?.state?.role;
   const isSmallScreen = useMediaQuery("(max-width: 56.25em)");
   const validateSchema = yup.object({
     fullName: yup.string().required("Full name is required"),
@@ -31,9 +30,7 @@ const SignUp = () => {
       .string()
       .email("Invalid email format")
       .required("Email is required"),
-    role: yup
-      .string()
-      .required("Role is required"),
+    role: yup.string().required("Role is required"),
     password: yup
       .string()
       .required("Password is required")
@@ -49,7 +46,7 @@ const SignUp = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      role:roleOfUser??""
+      role: roleOfUser ?? "",
     },
     validate: yupResolver(validateSchema),
   });
@@ -58,7 +55,7 @@ const SignUp = () => {
       fullName: form.values.fullName,
       email: form.values.email,
       password: form.values.password,
-      role:form.values.role
+      role: form.values.role,
     });
 
     if (response.data) {
@@ -178,13 +175,13 @@ const SignUp = () => {
                       {...form.getInputProps("confirmPassword")}
                     />
                     <Group justify="end">
-                     
+                      <Text fz={12}>Selected Role:</Text>
                       <Select
                         placeholder="Your Role?"
                         w={110}
                         data={["Mechanic", "Customer"]}
                         variant="unstyled"
-                        defaultValue='Mechanic'
+                        defaultValue="Mechanic"
                         styles={{
                           input: {
                             color: "green",
@@ -192,11 +189,8 @@ const SignUp = () => {
                           section: {
                             display: "none",
                           },
-                         
                         }}
-                        {
-                          ...form.getInputProps('role')
-                        }
+                        {...form.getInputProps("role")}
                       />
                     </Group>
                     <Button

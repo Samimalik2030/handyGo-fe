@@ -1,5 +1,5 @@
+import React, { useEffect, useState } from "react";
 import {
-  ActionIcon,
   AppShell,
   Avatar,
   Box,
@@ -9,21 +9,72 @@ import {
   Stack,
   Title,
   Text,
+  Alert,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import IconSettings from "../../assets/IconSettings";
 import IconSettingsPlus from "../../assets/IconSettingsPlus";
 import IconBriefCase from "../../assets/IconBriefCase";
-import IconService from "../../assets/IconService";
-import IconBell from "../../assets/IconBell";
 import IconArrowRight from "../../assets/IconArrowRight";
 import IconBrand from "../../assets/IconBrand";
+import { User } from "../../common/interfaces/user";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [opened, { toggle }] = useDisclosure();
+  const [showAlert, setShowAlert] = useState(true); // State to control alert visibility
+  const mechanicRoutes = [
+    {
+      label: "Bookings",
+      link: "/dashboard/bookings",
+      icon: <IconBriefCase />,
+    },
+    {
+      label: "Service Requests",
+      link: "/dashboard/service-requests",
+      icon: <IconBrand stroke="currentColor" />,
+    },
+    {
+      label: "Workshop Settings",
+      link: "/dashboard/workshop-settings",
+      icon: <IconSettingsPlus />,
+    },
+
+    {
+      label: "Account Settings",
+      link: "/dashboard/account-settings",
+      icon: <IconSettings />,
+    },
+  ];
+  const user: User | null = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user") as string)
+    : null;
+
+  const customerRoutes = [
+    {
+      label: "My Bookings",
+      link: "/dashboard/my-bookings",
+      icon: <IconBriefCase />,
+    },
+    {
+      label: "Service Requests",
+      link: "/dashboard/my-service-requests",
+      icon: <IconBrand stroke="currentColor" />,
+    },
+
+    {
+      label: "Account Settings",
+      link: "/dashboard/account-settings",
+      icon: <IconSettings />,
+    },
+  ];
+
+  useEffect(() => {
+    // This will run when the component mounts and show the alert
+    setShowAlert(true);
+  }, []);
 
   return (
     <AppShell
@@ -80,74 +131,23 @@ const Dashboard = () => {
       >
         <Flex direction={"column"} h={"100%"} justify={"space-between"}>
           <Stack gap={"xs"}>
-            <NavLink
-              label="Bookings"
-              leftSection={<IconBriefCase />}
-              active={location.pathname === "/dashboard/bookings"}
-              onClick={() => navigate("/dashboard/bookings")}
-              style={{
-                backgroundColor:
-                  location.pathname === "/dashboard/bookings"
-                    ? "#40c057ff"
-                    : "transparent",
-                color:
-                  location.pathname === "/dashboard/bookings"
-                    ? "white"
-                    : "black",
-                borderRadius: "10px",
-              }}
-            />
-            <NavLink
-              label="Service Requests"
-              active={location.pathname === "/dashboard/service-requests"}
-              onClick={() => navigate("/dashboard/service-requests")}
-              leftSection={<IconBrand stroke="currentColor" />}
-              style={{
-                backgroundColor:
-                  location.pathname === "/dashboard/service-requests"
-                    ? "#40c057ff"
-                    : "transparent",
-                color:
-                  location.pathname === "/dashboard/service-requests"
-                    ? "white"
-                    : "black",
-                borderRadius: "10px",
-              }}
-            />
-            <NavLink
-              label="Workshop Settings"
-              active={location.pathname === "/dashboard/workshop-settings"}
-              onClick={() => navigate("/dashboard/workshop-settings")}
-              leftSection={<IconSettingsPlus />}
-              style={{
-                backgroundColor:
-                  location.pathname === "/dashboard/workshop-settings"
-                    ? "#40c057ff"
-                    : "transparent",
-                color:
-                  location.pathname === "/dashboard/workshop-settings"
-                    ? "white"
-                    : "black",
-                borderRadius: "10px",
-              }}
-            />
-            <NavLink
-              label="Account Settings"
-              leftSection={<IconSettings />}
-              active={location.pathname === "/dashboard/account-settings"}
-              onClick={() => navigate("/dashboard/account-settings")}
-              style={{
-                backgroundColor:
-                  location.pathname === "/dashboard/account-settings"
-                    ? "#40c057ff"
-                    : "transparent",
-                color:
-                  location.pathname === "/dashboard/account-settings"
-                    ? "white"
-                    : "black",
-                borderRadius: "10px",
-              }}
-            />
+            {mechanicRoutes.map((route) => (
+              <NavLink
+                key={route.link}
+                label={route.label}
+                leftSection={route.icon}
+                active={location.pathname === route.link}
+                onClick={() => navigate(route.link)}
+                style={{
+                  backgroundColor:
+                    location.pathname === route.link
+                      ? "#40c057ff"
+                      : "transparent",
+                  color: location.pathname === route.link ? "white" : "black",
+                  borderRadius: "10px",
+                }}
+              />
+            ))}
           </Stack>
 
           <Flex
@@ -179,6 +179,18 @@ const Dashboard = () => {
       </AppShell.Navbar>
 
       <AppShell.Main bg={"#f4f5f7"}>
+        {/* Display the alert if showAlert is true */}
+        {showAlert && (
+          <Alert
+            title="Welcome Back!"
+            color="red"
+            onClose={() => setShowAlert(false)}
+            withCloseButton
+            // Close alert when user clicks the close button
+          >
+            Please list your workshop
+          </Alert>
+        )}
         <Outlet />
       </AppShell.Main>
     </AppShell>
