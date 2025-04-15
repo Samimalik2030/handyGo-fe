@@ -14,17 +14,44 @@ import {
   Box,
   Paper,
   Divider,
+  Select,
+  Avatar,
 } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IUser } from "./interfaces/user";
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<IUser | null>(null);
+  const form = useForm({
+    initialValues: {
+      city: "",
+      area: "",
+    },
+  });
+
+  useEffect(() => {
+    const user: IUser | null = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user") as string)
+      : null;
+    setUser(user);
+  }, []);
+
+  const handleSubmit = () => {
+    navigate("/indexing", {
+      state: {
+        ...form.values,
+      },
+    });
+  };
 
   return (
     <>
       <Container fluid mt={12}>
         <Stack gap={60}>
-          <Card bg={"#40c057ff"}>
+          <Card bg={"#40c057ff"} h={"96vh"}>
             <Card bg={"transparent"} pt={20}>
               <Flex justify={"space-between"} align={"center"}>
                 <Flex gap={50}>
@@ -32,33 +59,52 @@ export default function LandingPage() {
                     <Anchor c={"white"}>HANDYGO</Anchor>
                   </Group>
                   <Flex gap={30}>
-                    <Anchor c={"white"} onClick={() => navigate("/sign-up",{
-                      state:{
-                        role:'Mechanic'
+                    <Anchor
+                      c={"white"}
+                      onClick={() =>
+                        navigate("/sign-up", {
+                          state: {
+                            role: "Mechanic",
+                          },
+                        })
                       }
-                    })}>
+                    >
                       APPLY TO BE A MECHANIC
                     </Anchor>
 
                     <Anchor c={"white"}>OUR SERVICES</Anchor>
                     <Anchor c={"white"}>ABOUT US</Anchor>
-
                   </Flex>
                 </Flex>
                 <Flex gap={10}>
-                  <Button
-                    bg={"transparent"}
-                    onClick={() => navigate("/sign-in")}
-                  >
-                    SIGN IN
-                  </Button>
-                  <Button
-                    bg={"transparent"}
-                    style={{ border: "2px solid white" }}
-                    onClick={() => navigate("/sign-up")}
-                  >
-                    GET STARTED
-                  </Button>
+                  {user ? (
+                    <Group>
+                      <Button
+                        variant="outline"
+                        color="white"
+                        onClick={() => navigate("/dashboard/bookings")}
+                      >
+                        Dashboard
+                      </Button>
+                      <Avatar
+                        color="white"
+                        size={"md"}
+                        src={user.profileImage?.url}
+                      />
+                    </Group>
+                  ) : (
+                    <Button onClick={() => navigate("/sign-in")}>Login</Button>
+                  )}
+
+                  {!user && (
+                    <Button
+                      bg={"transparent"}
+                      style={{ border: "2px solid white" }}
+                      onClick={() => navigate("/sign-up")}
+                    >
+                      GET STARTED
+                    </Button>
+                  )}
                 </Flex>
               </Flex>
             </Card>
@@ -74,32 +120,45 @@ export default function LandingPage() {
                       next-day availability.
                     </Text>
                     <Card radius={"100px"} w={"100%"} bg={"#66d07a"}>
-                      <Flex gap={10}>
-                        <TextInput
-                          radius={30}
-                          w={"50%"}
-                          size="lg"
-                          placeholder="Your City"
-                        />
-                        <TextInput
-                          radius={30}
-                          h={50}
-                          w={"50%"}
-                          size="lg"
-                          placeholder="Your Area"
-                        />
-                        <Button
-                          h={46}
-                          w={130}
-                          radius={30}
-                          fz={16}
-                          variant="outline"
-                          bg={"#309945"}
-                          c={"white"}
-                        >
-                          Search
-                        </Button>
-                      </Flex>
+                      <form onSubmit={form.onSubmit(handleSubmit)}>
+                        <Flex gap={10}>
+                          <Select
+                            radius={30}
+                            w={"50%"}
+                            size="lg"
+                            placeholder="Your City"
+                            data={[
+                              "Multan",
+                              "Lahore",
+                              "Islamabad",
+                              "Karachi",
+                              "Rawalpindi",
+                              "Faisalabad",
+                            ]}
+                            {...form.getInputProps("city")}
+                          />
+                          <TextInput
+                            radius={30}
+                            h={50}
+                            w={"50%"}
+                            size="lg"
+                            placeholder="Your Area"
+                            {...form.getInputProps("area")}
+                          />
+                          <Button
+                            h={46}
+                            w={130}
+                            radius={30}
+                            fz={16}
+                            variant="outline"
+                            bg={"#309945"}
+                            c={"white"}
+                            type="submit"
+                          >
+                            Search
+                          </Button>
+                        </Flex>
+                      </form>
                     </Card>
                     <Group justify="end"></Group>
                   </Stack>
@@ -193,13 +252,21 @@ export default function LandingPage() {
                 h={48}
                 bg={"transparent"}
                 style={{ border: "1px solid #40c057ff" }}
+                onClick={() =>
+                  navigate("/indexing", {
+                    state: {
+                      city: "",
+                      area: "",
+                    },
+                  })
+                }
               >
                 FIND OUT MORE
               </Button>
             </Flex>
           </Stack>
 
-          <Flex justify={"center"}>
+          <Flex justify={"center"} h={"80vh"}>
             <Card bg={"transparent"} mt={20} w={"90%"}>
               <Flex gap={40}>
                 <Card bg={"transparent"} w={"40%"} p={0} radius={30}>
@@ -243,7 +310,7 @@ export default function LandingPage() {
                       </Stack>
                     </Stack>
 
-                    <Button
+                    {/* <Button
                       w={210}
                       c={"#40c057ff"}
                       fz={16}
@@ -253,7 +320,7 @@ export default function LandingPage() {
                       style={{ border: "1px solid #40c057ff" }}
                     >
                       FIND OUT MORE
-                    </Button>
+                    </Button> */}
                   </Stack>
                 </Card>
               </Flex>
@@ -405,20 +472,21 @@ export default function LandingPage() {
                     <Stack mt={20}>
                       <Title fz={28}>Apply to be a mechanic</Title>
                       <Text fz={18} w={"90%"}>
-                        Join ClickMechanic as a mechanic or garage and accept
-                        the work you want. Free to join, with great perks and
-                        discounts.
+                        Join HandyGo as a mechanic or garage and accept the work
+                        you want. Free to join, with great perks and discounts.
                       </Text>
                       <Button
                         w={250}
                         h={44}
                         radius={30}
                         fz={18}
-                        onClick={() => navigate("/sign-up",{
-                          state:{
-                            role:"Mechanic"
-                          }
-                        })}
+                        onClick={() =>
+                          navigate("/sign-up", {
+                            state: {
+                              role: "Mechanic",
+                            },
+                          })
+                        }
                       >
                         Work with HandyGO
                       </Button>
@@ -439,7 +507,7 @@ export default function LandingPage() {
               <Title ta={"center"}>What our customers are saying</Title>
               <Flex justify={"center"}>
                 <SimpleGrid cols={3} spacing={20} w={"85%"}>
-                  <Paper withBorder shadow="lg">
+                  <Paper withBorder shadow="lg" pb={12}>
                     <Stack>
                       <Image
                         src={

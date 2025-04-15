@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import SignUp from "./features/auth/sign-up";
-import SignIn from "./features/auth/sign-in";
+
 import ForgotPassword from "./features/auth/forgot-password";
 import VerifyOtp from "./features/auth/verify-otp";
 import ResetPassword from "./features/auth/reset-password";
@@ -11,6 +11,9 @@ import ProfileSettings from "./features/mechanic/profile-settings";
 import ServiceRequests from "./features/mechanic/service-requests";
 import WorkshopIndexing from "./common/workshop-indexing";
 import LandingPage from "./common/landing-page";
+import SignIn from "./features/auth/SignIn";
+import CustomerServicesRequest from "./features/bookings/customer/customer-bookings.tsx";
+import MyBookings from "./features/bookings/customer/my-bookings.tsx";
 
 
 export const router = createBrowserRouter([
@@ -61,6 +64,14 @@ export const router = createBrowserRouter([
       {
         path: "service-requests", 
         element: <ServiceRequests />
+      },
+      {
+        path: "my-service-requests", 
+        element: <CustomerServicesRequest/>
+      },
+      {
+        path: "my-bookings", 
+        element: <MyBookings/>
       },
     ]
     }

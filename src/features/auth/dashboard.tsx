@@ -10,6 +10,8 @@ import {
   Title,
   Text,
   Alert,
+  Anchor,
+  ColorSchemeScript,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -18,13 +20,17 @@ import IconSettingsPlus from "../../assets/IconSettingsPlus";
 import IconBriefCase from "../../assets/IconBriefCase";
 import IconArrowRight from "../../assets/IconArrowRight";
 import IconBrand from "../../assets/IconBrand";
-import { User } from "../../common/interfaces/user";
+import { modals } from "@mantine/modals";
+import { IUser } from "../../common/interfaces/user";
+import api from "../../api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [visible, setVisible] = useState(true);
+
   const [opened, { toggle }] = useDisclosure();
-  const [showAlert, setShowAlert] = useState(true); // State to control alert visibility
+
   const mechanicRoutes = [
     {
       label: "Bookings",
@@ -48,7 +54,7 @@ const Dashboard = () => {
       icon: <IconSettings />,
     },
   ];
-  const user: User | null = localStorage.getItem("user")
+  const user: IUser | null = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user") as string)
     : null;
 
@@ -72,9 +78,28 @@ const Dashboard = () => {
   ];
 
   useEffect(() => {
-    // This will run when the component mounts and show the alert
-    setShowAlert(true);
+    if (!user) {
+      navigate("/sign-in");
+    }
   }, []);
+
+  const openLogoutModal = () => {
+    modals.openConfirmModal({
+      title: "Confirm Logout",
+      centered: true,
+      children: <p>Are you sure you want to logout?</p>,
+      labels: { confirm: "Logout", cancel: "Cancel" },
+      confirmProps: { color: "red" },
+      onConfirm: () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/sign-in");
+        window.location.reload();
+      },
+    });
+  };
+  
+  console.log(user,'user')
 
   return (
     <AppShell
@@ -88,7 +113,11 @@ const Dashboard = () => {
     >
       <AppShell.Header>
         <Flex justify={"space-between"} align={"center"} px={"lg"}>
-          <Group gap={0}>
+          <Group
+            gap={0}
+            onClick={() => navigate("/")}
+            style={{ cursor: "pointer" }}
+          >
             <Title
               style={{
                 fontFamily: "cursive",
@@ -109,16 +138,33 @@ const Dashboard = () => {
               GO
             </span>
           </Group>
-          <Flex gap={2} align={"center"}>
-            <Avatar h={50} w={50} />
-            <Box>
-              <Text fz={14} truncate w={100} lh={1}>
-                Sami Ullah
-              </Text>
-              <Text truncate w={100} fz={12} lh={1}>
-                msamiullah2030@gmail.com
-              </Text>
-            </Box>
+          <Flex gap={"xl"} align={"center"}>
+            {user && user.role === 'Customer' &&(
+              <Anchor
+                c="#40c057ff"
+                onClick={() =>
+                  navigate("/indexing", {
+                    state: {
+                      city: "",
+                      area: "",
+                    },
+                  })
+                }
+              >
+                Book a mechanic
+              </Anchor>
+            )}
+            <Flex gap={8} align={"center"}>
+              <Avatar h={50} w={50} src={user?.profileImage?.url} />
+              <Box>
+                <Text fz={14} truncate w={100} lh={1}>
+                  {user?.name}
+                </Text>
+                <Text truncate w={100} fz={12} lh={1}>
+                  {user?.email}
+                </Text>
+              </Box>
+            </Flex>
           </Flex>
         </Flex>
       </AppShell.Header>
@@ -131,23 +177,43 @@ const Dashboard = () => {
       >
         <Flex direction={"column"} h={"100%"} justify={"space-between"}>
           <Stack gap={"xs"}>
-            {mechanicRoutes.map((route) => (
-              <NavLink
-                key={route.link}
-                label={route.label}
-                leftSection={route.icon}
-                active={location.pathname === route.link}
-                onClick={() => navigate(route.link)}
-                style={{
-                  backgroundColor:
-                    location.pathname === route.link
-                      ? "#40c057ff"
-                      : "transparent",
-                  color: location.pathname === route.link ? "white" : "black",
-                  borderRadius: "10px",
-                }}
-              />
-            ))}
+            {user?.role === "Mechanic"
+              ? mechanicRoutes.map((route) => (
+                  <NavLink
+                    key={route.link}
+                    label={route.label}
+                    leftSection={route.icon}
+                    active={location.pathname === route.link}
+                    onClick={() => navigate(route.link)}
+                    style={{
+                      backgroundColor:
+                        location.pathname === route.link
+                          ? "#40c057ff"
+                          : "transparent",
+                      color:
+                        location.pathname === route.link ? "white" : "black",
+                      borderRadius: "10px",
+                    }}
+                  />
+                ))
+              : customerRoutes.map((route) => (
+                  <NavLink
+                    key={route.link}
+                    label={route.label}
+                    leftSection={route.icon}
+                    active={location.pathname === route.link}
+                    onClick={() => navigate(route.link)}
+                    style={{
+                      backgroundColor:
+                        location.pathname === route.link
+                          ? "#40c057ff"
+                          : "transparent",
+                      color:
+                        location.pathname === route.link ? "white" : "black",
+                      borderRadius: "10px",
+                    }}
+                  />
+                ))}
           </Stack>
 
           <Flex
@@ -162,8 +228,9 @@ const Dashboard = () => {
             onMouseLeave={(e) =>
               (e.currentTarget.style.backgroundColor = "transparent")
             }
+            onClick={openLogoutModal}
           >
-            <Avatar />
+            <Avatar src={user?.profileImage?.url} />
             <Group gap={0} justify="space-between" w={"100%"}>
               <NavLink
                 w={80}
@@ -179,18 +246,6 @@ const Dashboard = () => {
       </AppShell.Navbar>
 
       <AppShell.Main bg={"#f4f5f7"}>
-        {/* Display the alert if showAlert is true */}
-        {showAlert && (
-          <Alert
-            title="Welcome Back!"
-            color="red"
-            onClose={() => setShowAlert(false)}
-            withCloseButton
-            // Close alert when user clicks the close button
-          >
-            Please list your workshop
-          </Alert>
-        )}
         <Outlet />
       </AppShell.Main>
     </AppShell>

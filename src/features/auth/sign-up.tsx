@@ -11,6 +11,7 @@ import {
   Container,
   Group,
   Select,
+  PasswordInput,
 } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
 import * as yup from "yup";
@@ -18,10 +19,13 @@ import api from "../../api";
 import { useMediaQuery } from "@mantine/hooks";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "../../common/logo";
+import { useState } from "react";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [loading, setLoading] = useState<boolean>(false);
+
   const roleOfUser = location?.state?.role;
   const isSmallScreen = useMediaQuery("(max-width: 56.25em)");
   const validateSchema = yup.object({
@@ -51,17 +55,28 @@ const SignUp = () => {
     validate: yupResolver(validateSchema),
   });
   async function handleSubmit() {
-    const response = await api.post("/auth/sign-up", {
-      fullName: form.values.fullName,
-      email: form.values.email,
-      password: form.values.password,
-      role: form.values.role,
-    });
+    try {
+      setLoading(true);
 
-    if (response.data) {
-      localStorage.setItem("token", response?.data?.token);
-      localStorage.setItem("user", response?.data?.user);
-      navigate("/dashboard/bookings");
+      const response = await api.post("/auth/sign-up", {
+        name: form.values.fullName,
+        email: form.values.email,
+        password: form.values.password,
+        role: form.values.role,
+      });
+      setLoading(false);
+
+      if (response.data) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        if (response.data.user.role === "Customer") {
+          navigate("/dashboard/my-bookings");
+        } else {
+          navigate("/dashboard/bookings");
+        }
+      }
+    } catch (error) {
+      setLoading(false);
     }
   }
 
@@ -151,7 +166,7 @@ const SignUp = () => {
                       radius={16}
                       {...form.getInputProps("email")}
                     />
-                    <TextInput
+                    <PasswordInput
                       fw={300}
                       fz={9}
                       c={"#6d7572"}
@@ -162,7 +177,7 @@ const SignUp = () => {
                       radius={16}
                       {...form.getInputProps("password")}
                     />
-                    <TextInput
+                    <PasswordInput
                       fw={300}
                       fz={9}
                       c={"#6d7572"}
@@ -202,6 +217,7 @@ const SignUp = () => {
                       radius={16}
                       bg={"#2A8C82"}
                       type="submit"
+                      loading={loading}
                     >
                       Sign Up
                     </Button>

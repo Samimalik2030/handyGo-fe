@@ -18,10 +18,13 @@ import api from "../../api";
 import { useMediaQuery } from "@mantine/hooks";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "../../common/logo";
+import { useState } from "react";
 
 const VerifyOtp = () => {
   const navigate = useNavigate();
-  const {state} = useLocation()
+  const { state } = useLocation();
+  const [loading, setLoading] = useState<boolean>(false);
+
   const isSmallScreen = useMediaQuery("(max-width: 56.25em)");
   const validateSchema = yup.object({
     otp: yup
@@ -37,17 +40,25 @@ const VerifyOtp = () => {
     validate: yupResolver(validateSchema),
   });
   async function handleSubmit() {
-    const response = await api.post("/auth/verify-otp", {
-      ...form.values,
-      email:state.email
-    });
-    if (response.data) {
-      navigate("/reset-password", {
-        state: {
-          email: state.email,
-          otp:form.values.otp
-        },
+    try {
+      setLoading(true);
+
+      const response = await api.post("/auth/verify-otp", {
+        ...form.values,
+        email: state.email,
       });
+      setLoading(false);
+
+      if (response.data) {
+        navigate("/reset-password", {
+          state: {
+            email: state.email,
+            otp: form.values.otp,
+          },
+        });
+      }
+    } catch (error) {
+      setLoading(false);
     }
   }
 
@@ -102,10 +113,11 @@ const VerifyOtp = () => {
             </Flex>
             <Center h={"100%"}>
               <Card w={"80%"} bg={"transparent"}>
-              <Flex justify={"center"} >
-                               <Logo/>
-                              </Flex>s
-                <Stack gap={8} >
+                <Flex justify={"center"}>
+                  <Logo />
+                </Flex>
+
+                <Stack gap={8}>
                   <Title fw={600} fz={25} ta={"center"}>
                     Forgot <span style={{ color: "#2A8C82" }}>Password</span>
                   </Title>
@@ -133,6 +145,7 @@ const VerifyOtp = () => {
                       radius={16}
                       bg={"#2A8C82"}
                       type="submit"
+                      loading={loading}
                     >
                       Next
                     </Button>

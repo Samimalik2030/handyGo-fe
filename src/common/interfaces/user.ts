@@ -1,6 +1,16 @@
-export type User = {
-  name: string;
+export interface IUser {
+  id: number;
   email: string;
   password: string;
-  role: "customer" | "mechanic" | "admin";
-};
+  name: string;
+  profileImage: FileDto | null;
+  role: string;
+  createdAt: Date;
+  updatedAt: Date;
+
+}
+
+export interface FileDto{
+  fileId:string
+  url:string
+}

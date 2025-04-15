@@ -19,11 +19,14 @@ import api from "../../api";
 import { useMediaQuery } from "@mantine/hooks";
 import { useLocation, useNavigate } from "react-router-dom";
 import Logo from "../../common/logo";
+import { useState } from "react";
 
 const ResetPassword = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const isSmallScreen = useMediaQuery("(max-width: 56.25em)");
+  const [loading, setLoading] = useState<boolean>(false);
+
   const validateSchema = yup.object({
     password: yup
       .string()
@@ -44,13 +47,19 @@ const ResetPassword = () => {
     validate: yupResolver(validateSchema),
   });
   async function handleSubmit() {
-    const response = await api.post("/auth/reset-password", {
-      password: form.values.password,
-      otp: state.otp,
-      email: state.email,
-    });
-    if (response.data) {
-      navigate("/");
+    try {
+      setLoading(true);
+      const response = await api.post("/auth/reset-password", {
+        password: form.values.password,
+        otp: state.otp,
+        email: state.email,
+      });
+      setLoading(false);
+      if (response.data) {
+        navigate("/sign-in");
+      }
+    } catch (error) {
+      setLoading(false);
     }
   }
 
@@ -150,6 +159,7 @@ const ResetPassword = () => {
                       radius={16}
                       bg={"#2A8C82"}
                       type="submit"
+                      loading={loading}
                     >
                       Reset
                     </Button>

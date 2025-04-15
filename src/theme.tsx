@@ -70,6 +70,11 @@ const theme = createTheme({
         c: "#2A8C82",
       },
     },
+    ActionIcon: {
+      defaultProps: {
+        color: "#40c057ff",
+      },
+    },
     Chip: {
       defaultProps: {
         color: "#40c057ff",

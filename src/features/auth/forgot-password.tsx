@@ -17,10 +17,12 @@ import api from "../../api";
 import { useMediaQuery } from "@mantine/hooks";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../common/logo";
+import { useState } from "react";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const isSmallScreen = useMediaQuery("(max-width: 56.25em)");
+  const [loading, setLoading] = useState<boolean>(false);
   const validateSchema = yup.object({
     email: yup
       .string()
@@ -30,19 +32,25 @@ const ForgotPassword = () => {
   const form = useForm({
     initialValues: {
       email: "",
-
     },
     validate: yupResolver(validateSchema),
   });
   async function handleSubmit() {
-    const response = await api.post("/auth/forgot-password", form.values);
-   if(response.data){
-    navigate('/verify-otp',{
-        state:{
-            email:form.values.email
-        }
-    })
-   }
+    try {
+      setLoading(true);
+      const response = await api.post("/auth/forgot-password", form.values);
+      setLoading(false);
+
+      if (response.data) {
+        navigate("/verify-otp", {
+          state: {
+            email: form.values.email,
+          },
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+    }
   }
 
   return (
@@ -96,15 +104,15 @@ const ForgotPassword = () => {
             </Flex>
             <Center h={"100%"}>
               <Card w={"80%"} bg={"transparent"}>
-              <Flex justify={"center"} >
-                               <Logo/>
-                              </Flex>
+                <Flex justify={"center"}>
+                  <Logo />
+                </Flex>
                 <Stack gap={8} mt={10}>
                   <Title fw={600} fz={25} ta={"center"}>
                     Forgot <span style={{ color: "#2A8C82" }}>Password</span>
                   </Title>
                   <Text ta={"center"} fw={400} fz={21}>
-                    Enter  email to recover your account
+                    Enter email to recover your account
                   </Text>
                 </Stack>
                 <form onSubmit={form.onSubmit(() => handleSubmit())}>
@@ -130,6 +138,7 @@ const ForgotPassword = () => {
                       radius={16}
                       bg={"#2A8C82"}
                       type="submit"
+                      loading={loading}
                     >
                       Next
                     </Button>

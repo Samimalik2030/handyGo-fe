@@ -1,22 +1,26 @@
 import { Group, SegmentedControl, Stack, Title } from "@mantine/core";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import UpcomingBookings from "./upcoming-bookings";
 import PreviousBookings from "./previous-bookings";
 import CancelledBookings from "./cancelled-bookings";
 
 const Bookings = () => {
   const [selectedValue, setSelectedValue] = useState("upcoming");
+
+  const [titleToRender, statusComponent] = useMemo(() => {
+    if (selectedValue === "upcoming")
+      return ["Upcoming Bookings", <UpcomingBookings />];
+    if (selectedValue === "completed")
+      return ["Completed Bookings", <PreviousBookings />];
+
+    return ["Cancelled Bookings", <CancelledBookings />];
+  }, [selectedValue]);
+
   return (
     <>
       <Stack>
         <Group justify="space-between">
-          <Title>
-            {selectedValue === "upcoming"
-              ? "Upcoming Bookings"
-              : selectedValue === "completed"
-              ? "Completed Bookings"
-              : "Cancelled Bookings"}
-          </Title>
+          <Title>{titleToRender}</Title>
           <SegmentedControl
             value={selectedValue}
             onChange={setSelectedValue}
@@ -31,13 +35,7 @@ const Bookings = () => {
           />
         </Group>
 
-        {selectedValue === "upcoming" ? (
-          <UpcomingBookings />
-        ) : selectedValue === "completed" ? (
-          <PreviousBookings />
-        ) : (
-          <CancelledBookings />
-        )}
+        {statusComponent}
       </Stack>
     </>
   );

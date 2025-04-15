@@ -1,19 +1,28 @@
-import { Table, HoverCard, Box, Menu, ActionIcon, Stack, Title,Text} from "@mantine/core";
+import {
+  Table,
+  HoverCard,
+  Box,
+  Menu,
+  ActionIcon,
+  Stack,
+  Title,
+  Text,
+} from "@mantine/core";
 import { useState, useEffect } from "react";
-import api from "../../api";
-import IconVerticalDots from "../../assets/iconVerticalDots";
-import { IBooking } from "../../common/interfaces/bookings";
-import { IUser } from "../../common/interfaces/user";
-import { Workshop } from "../../common/interfaces/workshop";
-import dayjs from 'dayjs'
+import dayjs from "dayjs";
+import api from "../../../api";
+import IconVerticalDots from "../../../assets/iconVerticalDots";
+import { IBooking } from "../../../common/interfaces/bookings";
+import { IUser } from "../../../common/interfaces/user";
+import { Workshop } from "../../../common/interfaces/workshop";
 
-export default function ServicesRequest() {
+export default function MyCancelledBookings() {
   const [requests, setRequests] = useState<IBooking[]>([]);
   const [workshop, setWorkshop] = useState<Workshop | null>(null);
 
-  const getServiceRequest = async (workshopId: number) => {
+  const getServiceRequest = async (userId: number) => {
     const response = await api.get(
-      `/bookings?status=pending&workshopId=${workshopId}`
+      `/bookings?status=pending&userId=${userId}`
     );
     setRequests(response.data);
   };
@@ -23,23 +32,15 @@ export default function ServicesRequest() {
       ? JSON.parse(localStorage.getItem("user") as string)
       : null;
 
-    async function getUserWorkshop() {
-      const response = await api.get(`/workshops?userId=${user?.id}`);
-      const workshop = response.data[0];
-      setWorkshop(workshop);
-
-      if (workshop?.id) {
-        getServiceRequest(workshop.id);
-      }
+    if (user?.id) {
+      getServiceRequest(user.id);
     }
-
-    getUserWorkshop();
   }, []);
 
   const handleUpdateStatus = async (status: string, id: number) => {
     await api.patch(`/bookings/${id}/status`, { status });
     if (workshop?.id) {
-      getServiceRequest(workshop.id); 
+      getServiceRequest(workshop.id);
     }
   };
 
@@ -48,7 +49,7 @@ export default function ServicesRequest() {
       <Table.Tr>
         <Table.Td colSpan={7}>
           <Text ta="center" c="dimmed">
-            There are no requests yet.
+            There are no upcoming bookings yet.
           </Text>
         </Table.Td>
       </Table.Tr>
@@ -65,7 +66,13 @@ export default function ServicesRequest() {
             ))}
           </Table.Td>
           <Table.Td>
-            <HoverCard width={250} shadow="md" withArrow openDelay={200} closeDelay={100}>
+            <HoverCard
+              width={250}
+              shadow="md"
+              withArrow
+              openDelay={200}
+              closeDelay={100}
+            >
               <HoverCard.Target>
                 <Box w={100} style={{ cursor: "pointer" }}>
                   <Text fz={12}>
@@ -88,11 +95,10 @@ export default function ServicesRequest() {
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Item onClick={() => handleUpdateStatus("accepted", booking.id)}>
-                  Approve
-                </Menu.Item>
-                <Menu.Item onClick={() => handleUpdateStatus("rejected", booking.id)}>
-                  Reject
+                <Menu.Item
+                  onClick={() => handleUpdateStatus("completed", booking.id)}
+                >
+                  Completed
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -103,7 +109,6 @@ export default function ServicesRequest() {
 
   return (
     <Stack>
-      <Title>Services Requests</Title>
       <Table striped>
         <Table.Thead
           styles={{

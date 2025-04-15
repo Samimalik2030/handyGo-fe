@@ -11,6 +11,7 @@ import {
   Image,
   Container,
   Group,
+  PasswordInput,
   Anchor,
 } from "@mantine/core";
 import { useForm, yupResolver } from "@mantine/form";
@@ -19,10 +20,13 @@ import api from "../../api";
 import { useMediaQuery } from "@mantine/hooks";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../common/logo";
+import { useState } from "react";
 
 const SignIn = () => {
   const navigate = useNavigate();
   const isSmallScreen = useMediaQuery("(max-width: 56.25em)");
+  const [loading,setLoading] = useState<boolean>(false)
+
   const validateSchema = yup.object({
     email: yup
       .string()
@@ -33,6 +37,7 @@ const SignIn = () => {
       .required("Password is required")
       .min(6, "Password must be at least 6 characters"),
   });
+
   const form = useForm({
     initialValues: {
       email: "",
@@ -40,12 +45,29 @@ const SignIn = () => {
     },
     validate: yupResolver(validateSchema),
   });
+
   async function handleSubmit() {
-    const response = await api.post("/auth/sign-in", form.values);
-    if(response.data){
-      localStorage.setItem("token", response?.data?.token);
-      localStorage.setItem("user", response?.data?.user);
-      navigate('/dashboard/bookings')
+    try {
+      setLoading(true)
+      const response = await api.post("/auth/sign-in", form.values);
+      setLoading(false)
+
+      if (!response) return;
+      if (!response.data) return;
+      if (!response.data.user) return;
+
+      if (response.data) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        if (response.data.user.role === "Customer") {
+          navigate("/dashboard/my-bookings");
+        } else {
+          navigate("/dashboard/bookings");
+        }
+      }
+    } catch (error) {
+      setLoading(false)
+      console.log(error);
     }
   }
 
@@ -100,10 +122,10 @@ const SignIn = () => {
             </Flex>
             <Center h={"100%"}>
               <Card w={"80%"} bg={"transparent"}>
-                <Flex justify={"center"} >
-                 <Logo/>
+                <Flex justify={"center"}>
+                  <Logo />
                 </Flex>
-                <Stack gap={8} >
+                <Stack gap={8}>
                   <Title fw={600} fz={25} ta={"center"}>
                     Sign <span style={{ color: "#2A8C82" }}>In</span>
                   </Title>
@@ -124,7 +146,7 @@ const SignIn = () => {
                       radius={16}
                       {...form.getInputProps("email")}
                     />
-                    <TextInput
+                    <PasswordInput
                       fw={300}
                       fz={9}
                       c={"#6d7572"}
@@ -136,7 +158,9 @@ const SignIn = () => {
                       {...form.getInputProps("password")}
                     />
                     <Group justify="end">
-                      <Anchor onClick={()=>navigate('/forgot-password')}>Forgot Password?</Anchor>
+                      <Anchor onClick={() => navigate("/forgot-password")}>
+                        Forgot Password?
+                      </Anchor>
                     </Group>
 
                     <Button
@@ -148,6 +172,7 @@ const SignIn = () => {
                       radius={16}
                       bg={"#2A8C82"}
                       type="submit"
+                      loading={loading}
                     >
                       Sign In
                     </Button>

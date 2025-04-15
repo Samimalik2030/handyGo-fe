@@ -1,21 +1,32 @@
-import { Table, HoverCard, Box, Menu, ActionIcon, Stack, Title,Text} from "@mantine/core";
+import {
+  Table,
+  HoverCard,
+  Box,
+  Menu,
+  ActionIcon,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { useState, useEffect } from "react";
-import api from "../../api";
-import IconVerticalDots from "../../assets/iconVerticalDots";
-import { IBooking } from "../../common/interfaces/bookings";
-import { IUser } from "../../common/interfaces/user";
-import { Workshop } from "../../common/interfaces/workshop";
-import dayjs from 'dayjs'
+import dayjs from "dayjs";
+import api from "../../../api";
+import IconVerticalDots from "../../../assets/iconVerticalDots";
+import { IBooking } from "../../../common/interfaces/bookings";
+import { IUser } from "../../../common/interfaces/user";
 
-export default function ServicesRequest() {
+export default function CustomerServicesRequest() {
   const [requests, setRequests] = useState<IBooking[]>([]);
-  const [workshop, setWorkshop] = useState<Workshop | null>(null);
+  const [refresh, setRefresh] = useState(false); // State to re-trigger useEffect
 
-  const getServiceRequest = async (workshopId: number) => {
-    const response = await api.get(
-      `/bookings?status=pending&workshopId=${workshopId}`
-    );
-    setRequests(response.data);
+  const getServiceRequest = async (userId: number) => {
+    try {
+      const response = await api.get(
+        `/bookings?status=pending&userId=${userId}`
+      );
+      setRequests(response.data);
+    } catch (error) {
+      console.error("Error fetching service requests:", error);
+    }
   };
 
   useEffect(() => {
@@ -23,23 +34,17 @@ export default function ServicesRequest() {
       ? JSON.parse(localStorage.getItem("user") as string)
       : null;
 
-    async function getUserWorkshop() {
-      const response = await api.get(`/workshops?userId=${user?.id}`);
-      const workshop = response.data[0];
-      setWorkshop(workshop);
-
-      if (workshop?.id) {
-        getServiceRequest(workshop.id);
-      }
+    if (user?.id) {
+      getServiceRequest(user.id);
     }
-
-    getUserWorkshop();
-  }, []);
+  }, [refresh]); // Will re-run when refresh state changes
 
   const handleUpdateStatus = async (status: string, id: number) => {
-    await api.patch(`/bookings/${id}/status`, { status });
-    if (workshop?.id) {
-      getServiceRequest(workshop.id); 
+    try {
+      await api.patch(`/bookings/${id}/status`, { status });
+      setRefresh((prev) => !prev); // Toggle refresh to re-fetch data
+    } catch (error) {
+      console.error("Error updating booking status:", error);
     }
   };
 
@@ -48,7 +53,7 @@ export default function ServicesRequest() {
       <Table.Tr>
         <Table.Td colSpan={7}>
           <Text ta="center" c="dimmed">
-            There are no requests yet.
+            There are no service requests yet.
           </Text>
         </Table.Td>
       </Table.Tr>
@@ -56,7 +61,7 @@ export default function ServicesRequest() {
       requests.map((booking) => (
         <Table.Tr key={booking.id}>
           <Table.Td>{booking.id}</Table.Td>
-          <Table.Td>{booking?.user?.name}</Table.Td>
+          <Table.Td>{booking?.workshop?.name}</Table.Td>
           <Table.Td>
             {booking.services.map((service, i) => (
               <Text key={i} fz={10}>
@@ -65,7 +70,13 @@ export default function ServicesRequest() {
             ))}
           </Table.Td>
           <Table.Td>
-            <HoverCard width={250} shadow="md" withArrow openDelay={200} closeDelay={100}>
+            <HoverCard
+              width={250}
+              shadow="md"
+              withArrow
+              openDelay={200}
+              closeDelay={100}
+            >
               <HoverCard.Target>
                 <Box w={100} style={{ cursor: "pointer" }}>
                   <Text fz={12}>
@@ -88,11 +99,10 @@ export default function ServicesRequest() {
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Item onClick={() => handleUpdateStatus("accepted", booking.id)}>
-                  Approve
-                </Menu.Item>
-                <Menu.Item onClick={() => handleUpdateStatus("rejected", booking.id)}>
-                  Reject
+                <Menu.Item
+                  onClick={() => handleUpdateStatus("rejected", booking.id)}
+                >
+                  Cancel
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -103,7 +113,6 @@ export default function ServicesRequest() {
 
   return (
     <Stack>
-      <Title>Services Requests</Title>
       <Table striped>
         <Table.Thead
           styles={{
@@ -116,7 +125,7 @@ export default function ServicesRequest() {
         >
           <Table.Tr>
             <Table.Th>Booking ID</Table.Th>
-            <Table.Th>Customer Name</Table.Th>
+            <Table.Th>Workshop Name</Table.Th>
             <Table.Th>Services</Table.Th>
             <Table.Th>Description</Table.Th>
             <Table.Th>Booking Date</Table.Th>
