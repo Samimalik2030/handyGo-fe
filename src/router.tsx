@@ -14,6 +14,7 @@ import LandingPage from "./common/landing-page";
 import SignIn from "./features/auth/SignIn";
 import CustomerServicesRequest from "./features/bookings/customer/customer-bookings.tsx";
 import MyBookings from "./features/bookings/customer/my-bookings.tsx";
+import MyCompletedBookings from "./features/bookings/customer/customerCompletedBookings.tsx";
 
 
 export const router = createBrowserRouter([
@@ -72,6 +73,10 @@ export const router = createBrowserRouter([
       {
         path: "my-bookings", 
         element: <MyBookings/>
+      },
+      {
+        path: "my-completed-bookings", 
+        element: <MyCompletedBookings/>
       },
     ]
     }

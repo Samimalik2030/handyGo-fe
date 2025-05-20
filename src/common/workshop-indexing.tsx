@@ -31,6 +31,7 @@ import { useEffect, useState } from "react";
 import { Workshop } from "./interfaces/workshop";
 import { IUser } from "./interfaces/user";
 import { notifications } from "@mantine/notifications";
+import WorkshopDetails from "../features/bookings/customer/workshop-details";
 
 export default function WorkshopIndexing() {
   const location = useLocation();
@@ -42,7 +43,11 @@ export default function WorkshopIndexing() {
     null
   );
 
+  
+
   const [opened, { open: openModal, close: closeModal }] = useDisclosure(false);
+  const [openedDetails, { open: openDetailModal, close: closeDetailModal }] = useDisclosure(false);
+
   const [
     openedSignUpModal,
     { open: openSignUpModal, close: closeSignUpModal },
@@ -109,6 +114,7 @@ export default function WorkshopIndexing() {
       ...bookingForm.values,
       user: newUser,
       workshop: selectedWorkshop,
+      status: "pending",
     });
     if (response.data) {
       setSelectedWorkshop(null);
@@ -154,8 +160,20 @@ export default function WorkshopIndexing() {
 
   const handleOpenModal = (workshop: Workshop) => {
     setSelectedWorkshop(workshop);
+    if(!newUser){
+      openSignUpModal()
+    }
     openModal();
   };
+
+const handleOpenDetails = (workshop:Workshop) =>{
+  setSelectedWorkshop(workshop)
+  openDetailModal()
+}
+const handleCloseDetails = () =>{
+  setSelectedWorkshop(null)
+  closeDetailModal()
+}
   return (
     <>
       <Navbar />
@@ -188,7 +206,7 @@ export default function WorkshopIndexing() {
         </form>
         {workshops.length > 0 && <Text> {workshops.length} result found</Text>}
 
-        <Flex wrap={"wrap"} gap={'xl'}>
+        <Flex wrap={"wrap"} gap={"xl"}>
           {workshops.map((workshop) => (
             <>
               <Card
@@ -198,7 +216,12 @@ export default function WorkshopIndexing() {
                 withBorder
                 w={350}
                 mt={12}
+               style={{
+                cursor:"pointer"
+               }}
+               onClick={()=>handleOpenDetails(workshop)}
               >
+
                 <Card.Section withBorder>
                   <Flex h={150} align={"center"} px={"sm"} gap={"xl"}>
                     <Stack>
@@ -212,20 +235,20 @@ export default function WorkshopIndexing() {
                           fontFamily: "cursive",
                         }}
                       >
-                        {workshop.name}
+                        {workshop?.name}
                       </Title>
                       <Stack gap={2}>
                         <Group gap={"xs"}>
                           <IconEye />
-                          <Text c={"dimmed"}>{workshop.workshopType}</Text>
+                          <Text c={"dimmed"}>{workshop?.workshopType}</Text>
                         </Group>
                         <Group gap={"xs"}>
                           <IconLocation height="20" width="20" />
-                          <Text c={"dimmed"}>{workshop.city}</Text>
+                          <Text c={"dimmed"}>{workshop?.city}</Text>
                         </Group>
                         <Group gap={"xs"}>
                           <IconPhone height="18" width="18" />
-                          <Text c={"dimmed"}>{workshop.contactNumber}</Text>
+                          <Text c={"dimmed"}>{workshop?.contactNumber}</Text>
                         </Group>
                       </Stack>
                     </Stack>
@@ -381,6 +404,11 @@ export default function WorkshopIndexing() {
             <Button type="submit">Sign Up</Button>
           </Stack>
         </form>
+      </Modal>
+
+
+      <Modal opened={openedDetails} onClose={()=>handleCloseDetails()} size={'lg'}>
+        <WorkshopDetails workshop={selectedWorkshop}/>
       </Modal>
     </>
   );

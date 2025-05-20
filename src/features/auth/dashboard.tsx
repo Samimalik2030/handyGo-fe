@@ -65,6 +65,11 @@ const Dashboard = () => {
       icon: <IconBriefCase />,
     },
     {
+      label: "Previous Bookings",
+      link: "/dashboard/my-completed-bookings",
+      icon: <IconBriefCase />,
+    },
+    {
       label: "Service Requests",
       link: "/dashboard/my-service-requests",
       icon: <IconBrand stroke="currentColor" />,

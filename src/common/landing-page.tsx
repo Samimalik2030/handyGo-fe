@@ -18,11 +18,14 @@ import {
   Avatar,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IUser } from "./interfaces/user";
 
 export default function LandingPage() {
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const servicesRef = useRef<HTMLDivElement>(null);
+
   const navigate = useNavigate();
   const [user, setUser] = useState<IUser | null>(null);
   const form = useForm({
@@ -72,8 +75,26 @@ export default function LandingPage() {
                       APPLY TO BE A MECHANIC
                     </Anchor>
 
-                    <Anchor c={"white"}>OUR SERVICES</Anchor>
-                    <Anchor c={"white"}>ABOUT US</Anchor>
+                    <Anchor
+                      c={"white"}
+                      onClick={() => {
+                        const aboutSection =
+                          document.getElementById("services");
+                        aboutSection?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      OUR SERVICES
+                    </Anchor>
+                    <Anchor
+                      c={"white"}
+                      onClick={() => {
+                        const aboutSection =
+                          document.getElementById("about-us");
+                        aboutSection?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      ABOUT US
+                    </Anchor>
                   </Flex>
                 </Flex>
                 <Flex gap={10}>
@@ -265,52 +286,52 @@ export default function LandingPage() {
               </Button>
             </Flex>
           </Stack>
+          <div ref={aboutRef} id="about-us">
+            <Flex justify={"center"} h={"80vh"}>
+              <Card bg={"transparent"} mt={20} w={"90%"}>
+                <Flex gap={40}>
+                  <Card bg={"transparent"} w={"40%"} p={0} radius={30}>
+                    <Image
+                      h={450}
+                      radius={30}
+                      src={
+                        "https://ik.imagekit.io/xf3wbji6t/about_us_400x500-e761a4b894fb46451e19937192f37993.jpg?updatedAt=1743242464692"
+                      }
+                    />
+                  </Card>
+                  <Card bg={"transparent"} w={"60%"}>
+                    <Stack>
+                      <Stack gap={40}>
+                        <Stack gap={15}>
+                          <Text fz={18}>ABOUT US</Text>
+                          <Title fz={28}>Our promise to you</Title>
+                        </Stack>
 
-          <Flex justify={"center"} h={"80vh"}>
-            <Card bg={"transparent"} mt={20} w={"90%"}>
-              <Flex gap={40}>
-                <Card bg={"transparent"} w={"40%"} p={0} radius={30}>
-                  <Image
-                    h={450}
-                    radius={30}
-                    src={
-                      "https://ik.imagekit.io/xf3wbji6t/about_us_400x500-e761a4b894fb46451e19937192f37993.jpg?updatedAt=1743242464692"
-                    }
-                  />
-                </Card>
-                <Card bg={"transparent"} w={"60%"}>
-                  <Stack>
-                    <Stack gap={40}>
-                      <Stack gap={15}>
-                        <Text fz={18}>ABOUT US</Text>
-                        <Title fz={28}>Our promise to you</Title>
+                        <Stack>
+                          <Text fz={16}>
+                            Ever thought car repair was a nightmare? We did!
+                            Which is why we're here to make fixing your vehicle
+                            as stress free as possible.
+                          </Text>
+                          <Text fz={16}>
+                            Whether it's your clutch or cambelt, alternator or
+                            air filter, or just need an MOT and service, our
+                            state-of-the-art quoting engine will give you an
+                            instant upfront quote based on industry standard
+                            data. This means you'll be getting a fair price,
+                            which could save you up to 50%.
+                          </Text>
+                          <Text fz={16}>
+                            If you're happy with your quote, simply place your
+                            booking and one of our vetted car mechanics will fix
+                            your car or van for the price stated. Not only this
+                            but they'll come to you (you don't even have to
+                            leave your living room!).
+                          </Text>
+                        </Stack>
                       </Stack>
 
-                      <Stack>
-                        <Text fz={16}>
-                          Ever thought car repair was a nightmare? We did! Which
-                          is why we're here to make fixing your vehicle as
-                          stress free as possible.
-                        </Text>
-                        <Text fz={16}>
-                          Whether it's your clutch or cambelt, alternator or air
-                          filter, or just need an MOT and service, our
-                          state-of-the-art quoting engine will give you an
-                          instant upfront quote based on industry standard data.
-                          This means you'll be getting a fair price, which could
-                          save you up to 50%.
-                        </Text>
-                        <Text fz={16}>
-                          If you're happy with your quote, simply place your
-                          booking and one of our vetted car mechanics will fix
-                          your car or van for the price stated. Not only this
-                          but they'll come to you (you don't even have to leave
-                          your living room!).
-                        </Text>
-                      </Stack>
-                    </Stack>
-
-                    {/* <Button
+                      {/* <Button
                       w={210}
                       c={"#40c057ff"}
                       fz={16}
@@ -321,12 +342,14 @@ export default function LandingPage() {
                     >
                       FIND OUT MORE
                     </Button> */}
-                  </Stack>
-                </Card>
-              </Flex>
-            </Card>
-          </Flex>
+                    </Stack>
+                  </Card>
+                </Flex>
+              </Card>
+            </Flex>
+          </div>
 
+          <div ref={aboutRef} id="services">
           <Card bg={"#f1f6ff"} px={60} py={60}>
             <Stack gap={40}>
               <Stack>
@@ -463,7 +486,7 @@ export default function LandingPage() {
               </Flex>
             </Stack>
           </Card>
-
+          </div>
           <Stack gap={0}>
             <Flex justify={"center"}>
               <Card px={60} py={100} w={"100%"} bg={"#fafafa"}>

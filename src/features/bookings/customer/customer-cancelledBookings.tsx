@@ -22,7 +22,7 @@ export default function MyCancelledBookings() {
 
   const getServiceRequest = async (userId: number) => {
     const response = await api.get(
-      `/bookings?status=pending&userId=${userId}`
+      `/bookings?status=cancelled&userId=${userId}`
     );
     setRequests(response.data);
   };
